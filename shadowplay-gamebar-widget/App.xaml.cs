@@ -5,7 +5,6 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Navigation;
 
 namespace ShadowPlayReminderWidget
@@ -13,30 +12,10 @@ namespace ShadowPlayReminderWidget
     sealed partial class App : Application
     {
         private XboxGameBarWidget _widget;
-        private bool _contentLoaded;
-
         public App()
         {
             InitializeComponent();
             Suspending += OnSuspending;
-        }
-
-        [MTAThread]
-        public static void Main(string[] args)
-        {
-            Application.Start(_ => new App());
-        }
-
-        private void InitializeComponent()
-        {
-            if (_contentLoaded)
-            {
-                return;
-            }
-
-            _contentLoaded = true;
-            var resourceLocator = new Uri("ms-appx:///App.xaml");
-            Application.LoadComponent(this, resourceLocator, ComponentResourceLocation.Application);
         }
 
         protected override void OnActivated(IActivatedEventArgs args)
