@@ -8,6 +8,7 @@ using Windows.UI.Core;
 using Windows.UI.Notifications;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Navigation;
 
 namespace ShadowPlayReminderWidget
@@ -19,12 +20,41 @@ namespace ShadowPlayReminderWidget
         private XboxGameBarWidgetNotificationManager _notificationManager;
         private XboxGameBarAppTargetTracker _targetTracker;
         private bool _notificationsEnabled = true;
+        private bool _contentLoaded;
+        private ToggleSwitch NotificationsToggle;
+        private Button CheckNowButton;
+        private TextBlock LastCheckedText;
+        private TextBlock StatusText;
+        private Border StatusBorder;
 
         public MainPage()
         {
             InitializeComponent();
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
+        }
+
+        private void InitializeComponent()
+        {
+            if (_contentLoaded)
+            {
+                return;
+            }
+
+            _contentLoaded = true;
+            var resourceLocator = new Uri("ms-appx:///MainPage.xaml");
+            Application.LoadComponent(this, resourceLocator, ComponentResourceLocation.Nested);
+
+            NotificationsToggle = (ToggleSwitch)FindName(nameof(NotificationsToggle));
+            CheckNowButton = (Button)FindName(nameof(CheckNowButton));
+            LastCheckedText = (TextBlock)FindName(nameof(LastCheckedText));
+            StatusText = (TextBlock)FindName(nameof(StatusText));
+            StatusBorder = (Border)FindName(nameof(StatusBorder));
+
+            if (NotificationsToggle != null)
+            {
+                _notificationsEnabled = NotificationsToggle.IsOn;
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -40,8 +70,15 @@ namespace ShadowPlayReminderWidget
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            NotificationsToggle.Toggled += OnNotificationsToggled;
-            CheckNowButton.Click += OnCheckNowClicked;
+            if (NotificationsToggle != null)
+            {
+                NotificationsToggle.Toggled += OnNotificationsToggled;
+            }
+
+            if (CheckNowButton != null)
+            {
+                CheckNowButton.Click += OnCheckNowClicked;
+            }
             _monitor.StatusChanged += OnMonitorStatusChanged;
 
             try
@@ -66,8 +103,15 @@ namespace ShadowPlayReminderWidget
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            NotificationsToggle.Toggled -= OnNotificationsToggled;
-            CheckNowButton.Click -= OnCheckNowClicked;
+            if (NotificationsToggle != null)
+            {
+                NotificationsToggle.Toggled -= OnNotificationsToggled;
+            }
+
+            if (CheckNowButton != null)
+            {
+                CheckNowButton.Click -= OnCheckNowClicked;
+            }
             _monitor.StatusChanged -= OnMonitorStatusChanged;
             _monitor.Dispose();
 
@@ -93,23 +137,33 @@ namespace ShadowPlayReminderWidget
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                LastCheckedText.Text = $"Last checked at {e.CheckedAt.LocalDateTime:t}";
-                StatusText.Text = e.Message;
-
-                switch (e.State)
+                if (LastCheckedText != null)
                 {
-                    case ShadowPlayState.Active:
-                        StatusBorder.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 30, 96, 66));
-                        break;
-                    case ShadowPlayState.Inactive:
-                        StatusBorder.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 120, 34, 34));
-                        break;
-                    case ShadowPlayState.Error:
-                        StatusBorder.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 94, 61, 18));
-                        break;
-                    default:
-                        StatusBorder.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 34, 40, 49));
-                        break;
+                    LastCheckedText.Text = $"Last checked at {e.CheckedAt.LocalDateTime:t}";
+                }
+
+                if (StatusText != null)
+                {
+                    StatusText.Text = e.Message;
+                }
+
+                if (StatusBorder != null)
+                {
+                    switch (e.State)
+                    {
+                        case ShadowPlayState.Active:
+                            StatusBorder.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 30, 96, 66));
+                            break;
+                        case ShadowPlayState.Inactive:
+                            StatusBorder.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 120, 34, 34));
+                            break;
+                        case ShadowPlayState.Error:
+                            StatusBorder.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 94, 61, 18));
+                            break;
+                        default:
+                            StatusBorder.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 34, 40, 49));
+                            break;
+                    }
                 }
             });
         }
@@ -148,7 +202,7 @@ namespace ShadowPlayReminderWidget
                         .BuildNotification();
 
                     var result = await _notificationManager.TryShowAsync(notification);
-                    if (result == XboxGameBarWidgetNotificationShowResult.Denied)
+                    if (result != XboxGameBarWidgetNotificationShowResult.Success)
                     {
                         ShowToastFallback(title, content);
                     }
@@ -176,7 +230,7 @@ namespace ShadowPlayReminderWidget
 
         private void OnNotificationsToggled(object sender, RoutedEventArgs e)
         {
-            _notificationsEnabled = NotificationsToggle.IsOn;
+            _notificationsEnabled = NotificationsToggle?.IsOn ?? true;
         }
 
         private async void OnCheckNowClicked(object sender, RoutedEventArgs e)

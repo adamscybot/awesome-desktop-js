@@ -94,7 +94,7 @@ namespace ShadowPlayReminderWidget.Services
             var _ = _query.GetFilesAsync();
         }
 
-        private async void QueryOnContentsChanged(StorageFileQueryResult sender, object args)
+        private async void QueryOnContentsChanged(IStorageQueryResultBase sender, object args)
         {
             await CheckStatusAsync(ShadowPlayTrigger.Watcher);
         }
