@@ -18,6 +18,11 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      - name: Install Windows 10 SDK 26100
+        uses: GuillaumeFalourd/setup-windows10-sdk-action@v2.4
+        with:
+          sdk-version: 26100
+
       - name: Restore and build APPX
         shell: pwsh
         run: |

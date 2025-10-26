@@ -30,7 +30,7 @@ shadowplay-gamebar-widget/
 
 ## Building and sideloading
 
-1. Open the project in Visual Studio 2019 (or newer) with the Windows 11 (22621) SDK or later installed.
+1. Open the project in Visual Studio 2019 (or newer) with the Windows 11 (26100) SDK or later installed.
 2. Ensure the **ShadowPlayReminderWidget** project is selected, then choose **Build** > **Publish** > **Create App Packages**.
 3. After installing the package, visit **Settings** > **Privacy & security** > **File system** and enable access for *ShadowPlay Reminder*.
 4. Launch any game, open the Xbox Game Bar (Win + G), pin *ShadowPlay Reminder*, and it will warn you when a game starts without ShadowPlay activity.
