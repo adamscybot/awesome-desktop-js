@@ -138,9 +138,6 @@
     <PackageReference Include="Microsoft.Gaming.XboxGameBar">
       <Version>7.3.2506120</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts">
-      <Version>10.0.26100.1</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.14</Version>
     </PackageReference>
