@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:gamebar="http://schemas.microsoft.com/appx/manifest/gaming/gamebar"
+  IgnorableNamespaces="uap uap2 uap3 rescap gamebar">
+  <Identity
+    Name="com.contoso.shadowplayreminder"
+    Publisher="CN=GameBarSamples"
+    Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>ShadowPlay Reminder</DisplayName>
+    <PublisherDisplayName>Game Bar Samples</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.18362.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <Application Id="App" Executable="ShadowPlayReminderWidget.exe" EntryPoint="ShadowPlayReminderWidget.App">
+      <uap:VisualElements
+        DisplayName="ShadowPlay Reminder"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png"
+        Description="Receive a notification when ShadowPlay is off as a game launches."
+        BackgroundColor="#10131A">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square310x310Logo="Assets\Square310x310Logo.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+
+      <Extensions>
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension
+            Name="com.microsoft.gamebar.widget"
+            Id="ShadowPlayReminderWidget"
+            PublicFolder="Assets"
+            DisplayName="ShadowPlay Reminder"
+            Description="Shows ShadowPlay status and notifies you if it is off when a game launches."
+            Logo="Assets\Square44x44Logo.png">
+            <uap3:Properties>
+              <gamebar:Widget>
+                <gamebar:Activation>Foreground</gamebar:Activation>
+                <gamebar:SupportsAutoLaunch>true</gamebar:SupportsAutoLaunch>
+                <gamebar:RequestedTheme>dark</gamebar:RequestedTheme>
+                <gamebar:DefaultSize>
+                  <gamebar:Width>400</gamebar:Width>
+                  <gamebar:Height>520</gamebar:Height>
+                </gamebar:DefaultSize>
+              </gamebar:Widget>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="broadFileSystemAccess" />
+    <uap:Capability Name="internetClient" />
+  </Capabilities>
+</Package>

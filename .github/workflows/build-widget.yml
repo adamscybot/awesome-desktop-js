@@ -1,0 +1,51 @@
+name: Build ShadowPlay widget package
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-appx:
+    name: Package widget
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore and build APPX
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $projectRoot = Join-Path $env:GITHUB_WORKSPACE 'shadowplay-gamebar-widget'
+          $projectFile = Join-Path $projectRoot 'ShadowPlayReminderWidget.csproj'
+          if (-not (Test-Path $projectFile)) {
+            throw "Project file '$projectFile' was not found."
+          }
+
+          $packageDir = Join-Path $projectRoot 'AppPackages'
+          if (Test-Path $packageDir) {
+            Remove-Item $packageDir -Recurse -Force
+          }
+
+          msbuild $projectFile /restore /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Never /p:AppxPackageDir="$packageDir\" /p:UapAppxPackageBuildMode=Sideload /p:AppxPackageSigningEnabled=false
+
+          $appx = Get-ChildItem -Path $packageDir -Filter *.appx -Recurse | Select-Object -First 1
+          if (-not $appx) {
+            throw "No APPX package was produced in '$packageDir'."
+          }
+
+          Write-Host "APPX package generated at $($appx.FullName)"
+
+      - name: Upload APPX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadowplay-reminder-appx
+          path: shadowplay-gamebar-widget/AppPackages/**/*.appx
+          if-no-files-found: error
