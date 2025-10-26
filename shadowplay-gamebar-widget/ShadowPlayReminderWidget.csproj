@@ -11,7 +11,7 @@
     <AssemblyName>ShadowPlayReminderWidget</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.22621.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -137,6 +137,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Gaming.XboxGameBar">
       <Version>7.3.2506120</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts">
+      <Version>10.0.22621.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.14</Version>
