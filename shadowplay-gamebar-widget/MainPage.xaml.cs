@@ -22,7 +22,11 @@ namespace ShadowPlayReminderWidget
         public MainPage()
         {
             InitializeComponent();
-            _notificationsEnabled = NotificationsToggle?.IsOn ?? true;
+
+            if (NotificationsToggle != null)
+            {
+                _notificationsEnabled = NotificationsToggle.IsOn;
+            }
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
         }
@@ -40,8 +44,15 @@ namespace ShadowPlayReminderWidget
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            NotificationsToggle?.Toggled += OnNotificationsToggled;
-            CheckNowButton?.Click += OnCheckNowClicked;
+            if (NotificationsToggle != null)
+            {
+                NotificationsToggle.Toggled += OnNotificationsToggled;
+            }
+
+            if (CheckNowButton != null)
+            {
+                CheckNowButton.Click += OnCheckNowClicked;
+            }
             _monitor.StatusChanged += OnMonitorStatusChanged;
 
             try
@@ -66,8 +77,15 @@ namespace ShadowPlayReminderWidget
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            NotificationsToggle?.Toggled -= OnNotificationsToggled;
-            CheckNowButton?.Click -= OnCheckNowClicked;
+            if (NotificationsToggle != null)
+            {
+                NotificationsToggle.Toggled -= OnNotificationsToggled;
+            }
+
+            if (CheckNowButton != null)
+            {
+                CheckNowButton.Click -= OnCheckNowClicked;
+            }
             _monitor.StatusChanged -= OnMonitorStatusChanged;
             _monitor.Dispose();
 
@@ -186,7 +204,7 @@ namespace ShadowPlayReminderWidget
 
         private void OnNotificationsToggled(object sender, RoutedEventArgs e)
         {
-            _notificationsEnabled = NotificationsToggle?.IsOn ?? true;
+            _notificationsEnabled = NotificationsToggle != null ? NotificationsToggle.IsOn : true;
         }
 
         private async void OnCheckNowClicked(object sender, RoutedEventArgs e)
