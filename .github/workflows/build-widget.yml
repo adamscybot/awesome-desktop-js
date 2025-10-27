@@ -1,0 +1,94 @@
+name: Build ShadowPlay widget package
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-appx:
+    name: Package widget
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install Windows 10 SDK 26100
+        uses: GuillaumeFalourd/setup-windows10-sdk-action@v2.4
+        with:
+          sdk-version: 26100
+      # Decode the PFX from the base64 secret -> writes a file and exposes its path as an output
+      - name: Decode signing certificate (PFX)
+        id: write_pfx
+        uses: timheuer/base64-to-file@v1.2
+        with:
+          fileName: 'shadowplay-reminder.pfx'
+          # (optional) fileDir: './'   # omit to use $RUNNER_TEMP
+          encodedString: ${{ secrets.SIGNING_CERT_BASE64 }}
+
+      # Export .cer from the PFX (keeps password secret via env)
+      - name: Export public CER from PFX
+        id: export_cer
+        shell: pwsh
+        env:
+          SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $pfxPath = '${{ steps.write_pfx.outputs.filePath }}'
+          $flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable `
+                 -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserKeySet `
+                 -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
+
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($pfxPath, $env:SIGNING_CERT_PASSWORD, $flags)
+
+          $cerPath = Join-Path $env:RUNNER_TEMP 'shadowplay-reminder.cer'
+          $cerBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+          [IO.File]::WriteAllBytes($cerPath, $cerBytes)
+
+          "pfx_path=$pfxPath"        >> $env:GITHUB_OUTPUT
+          "cer_path=$cerPath"        >> $env:GITHUB_OUTPUT
+
+      - name: Restore, build, sign (APPX/MSIX)
+        id: build_pkg
+        shell: pwsh
+        env:
+          SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $projectRoot = Join-Path $env:GITHUB_WORKSPACE 'shadowplay-gamebar-widget'
+          $projectFile = Join-Path $projectRoot 'ShadowPlayReminderWidget.csproj'
+          if (-not (Test-Path $projectFile)) { throw "Project file '$projectFile' was not found." }
+
+          $packageDir = Join-Path $projectRoot 'AppPackages'
+          if (Test-Path $packageDir) { Remove-Item $packageDir -Recurse -Force }
+
+          msbuild $projectFile /restore /t:Rebuild `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /p:GenerateAppxPackageOnBuild=true `
+            /p:AppxBundle=Never `
+            /p:UapAppxPackageBuildMode=Sideload `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateKeyFile="${{ steps.write_pfx.outputs.filePath }}" `
+            /p:PackageCertificatePassword="$env:SIGNING_CERT_PASSWORD" `
+            /p:AppxPackageDir="$packageDir\"
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadowplay-reminder-appx
+          path: shadowplay-gamebar-widget/AppPackages/**/*
+          if-no-files-found: error
+
+      - name: Upload signing cert (.cer)
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadowplay-reminder-cert
+          path: ${{ steps.export_cer.outputs.cer_path }}
+          if-no-files-found: error
